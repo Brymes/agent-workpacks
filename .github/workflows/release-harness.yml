@@ -1,0 +1,33 @@
+name: Release lifecycle harness
+on:
+  pull_request:
+    types: [labeled]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  lifecycle:
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'run-release-harness'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Run isolated lifecycle acceptance without providers
+        env:
+          TMPDIR: ${{ runner.temp }}
+        shell: bash
+        run: node scripts/harness/offline.mjs > "$RUNNER_TEMP/acceptance.log" 2>&1
+      - name: Retain repeatable evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lifecycle-${{ matrix.os }}
+          path: |
+            ${{ runner.temp }}/acceptance.log
+            ${{ runner.temp }}/agent-workpacks-harness-*/summary.json

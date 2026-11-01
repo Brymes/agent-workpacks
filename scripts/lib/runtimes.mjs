@@ -67,19 +67,27 @@ export function buildInvocation({ row, cfg, session, prompt, permission }) {
   if (tool === 'opencode') {
     const major = Number(String(version.stdout || '').match(/(?:^|\s)v?(\d+)\./)?.[1] || 0);
     const args = ['run'];
+    // A shared daemon does not inherit a later client's task-specific environment.
+    if (major >= 2) args.push('--standalone');
     if (major < 2) args.push('--dir', cfg.root);
     let model = row.model;
     if (major >= 2 && row.variant && model && !model.includes('#')) model += `#${row.variant}`;
     if (model) args.push('--model', model);
     if (major < 2 && row.variant) args.push('--variant', row.variant);
     args.push('--title', row.title || row.id, '--format', 'json', '--auto');
-    if (row.agent) args.push('--agent', row.agent);
+    const agent = major >= 2 ? (row.agent || 'awp-worker') : row.agent;
+    if (agent) args.push('--agent', agent);
     if (session) args.push('--session', session);
     args.push(prompt);
     if (major >= 2) {
       delete env.OPENCODE_PERMISSION;
       const previous = env.OPENCODE_CONFIG_CONTENT ? JSON.parse(env.OPENCODE_CONFIG_CONTENT) : {};
-      env.OPENCODE_CONFIG_CONTENT = JSON.stringify({ ...previous, permissions: [...(previous.permissions || []), ...openCodeV2Permissions(permission, cfg)] });
+      const rules = openCodeV2Permissions(permission, cfg);
+      env.OPENCODE_CONFIG_CONTENT = JSON.stringify({
+        ...previous,
+        permissions: [...(previous.permissions || []), ...rules],
+        agents: { ...(previous.agents || {}), [agent]: { ...(previous.agents?.[agent] || {}), mode: 'primary', description: 'One bounded Agent Workpacks assignment', permissions: rules } },
+      });
     } else env.OPENCODE_PERMISSION = JSON.stringify(permission);
     return { binary, args, env, session: session || null };
   }

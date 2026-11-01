@@ -20,6 +20,9 @@ failed attempt before using explicit `--fresh`. An interrupted attempt retains l
 `--accept-brief-change` accepts a revised task description only when ownership and the rest of the assignment remain
 unchanged. Stop a running worker before accepting that revision.
 
+OpenCode 2 uses a standalone process so each task receives its own environment and permission configuration. Its
+selected agent receives the same bounded rules; a pre-existing agent allow cannot silently replace the task guardrails.
+
 Every runtime gets the same bounded preamble, local-only Git rule, and command wrappers that deny common remote
 operations. OpenCode receives its native version-specific permission format; Claude receives task-scoped settings;
 Codex uses workspace-write permissions with its task output directory added. These are cooperative guardrails,

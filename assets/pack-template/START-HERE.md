@@ -22,21 +22,20 @@ a real policy exception as a dated owner amendment in RULES.md; otherwise stop o
 From `{{ROOT}}`:
 
 ```bash
-{{NODE}} {{SKILL_DIR}}/scripts/pack-worker.mjs start --pack {{ROOT}}/{{PACK}} --task <ID>
-{{NODE}} {{SKILL_DIR}}/scripts/pack-worker.mjs instruct --pack {{ROOT}}/{{PACK}} --task <ID> "re-read QUESTIONS.md and continue from next_action"
-{{NODE}} {{SKILL_DIR}}/scripts/pack-worker.mjs status --pack {{ROOT}}/{{PACK}}
-{{NODE}} {{SKILL_DIR}}/scripts/pack-watch.mjs attach --pack {{ROOT}}/{{PACK}}
+"{{NODE}}" "{{SKILL_DIR}}/scripts/pack-worker.mjs" start --pack "{{ROOT}}/{{PACK}}" --task <ID> --tool opencode
+"{{NODE}}" "{{SKILL_DIR}}/scripts/pack-worker.mjs" instruct --pack "{{ROOT}}/{{PACK}}" --task <ID> "re-read QUESTIONS.md and continue from next_action"
+"{{NODE}}" "{{SKILL_DIR}}/scripts/pack-worker.mjs" status --pack "{{ROOT}}/{{PACK}}"
+"{{NODE}}" "{{SKILL_DIR}}/scripts/pack-watch.mjs" attach --pack "{{ROOT}}/{{PACK}}" --host <lead-tool> --session <native-session-id>
 ```
 
-`attach` is for a Codex senior. Its watcher runs a no-model sweep every 15 minutes and queues new action into this
-pack's recorded Codex senior. The optional 30-minute Codex heartbeat is a fallback and consumes a subscription turn
-even when quiet.
+Select each worker runtime independently. Bind exactly one lead. Codex uses queued delivery from a no-model watcher;
+Claude and OpenCode use their native background completion notifications. See the installed skill's references/hosts.md.
 
-A Claude or OpenCode lead binds its native session before arming the waiter. It runs this waiter with the Bash tool's `run_in_background`, never
-`nohup … &`, and re-arms it after each wake (`{{SKILL_DIR}}/references/claude-senior.md`):
+A Claude or OpenCode lead arms this waiter through its shell tool. Claude uses `run_in_background: true`; OpenCode
+uses `background: true`. Re-arm after handling and acknowledging each wake; do not detach it with `nohup` or `&`.
 
 ```bash
-{{NODE}} {{SKILL_DIR}}/scripts/pack-watch.mjs wait --pack {{ROOT}}/{{PACK}} --also-watch {{ROOT}}/{{PACK}}/control/lane-results.jsonl
+"{{NODE}}" "{{SKILL_DIR}}/scripts/pack-watch.mjs" wait --pack "{{ROOT}}/{{PACK}}" --host <lead-tool>
 ```
 
 Fresh senior resume prompt:

@@ -18,7 +18,7 @@ export const WORKER_REMOTE_DENY = ['git push*', 'gh pr *', 'gh release *', 'gh r
 export const RESERVED_DIRS = ['.opencode', '.claude', '.agents', '.codex'];
 // Inside a task folder the worker owns STATUS.md, QUESTIONS.md (its questions), REPORT.md, HANDOFF.md and scratch
 // output; these are the orchestrator's or the scripts' and stay read-only for the worker.
-export const TASK_READ_ONLY_FILES = ['BRIEF.md', 'REVIEW.md', 'INBOX.md', 'PROMPT.txt', 'run.jsonl', 'launch.log', 'supervisor.log', 'exit.json', 'attempts/**', 'brief-versions/**'];
+export const TASK_READ_ONLY_FILES = ['BRIEF.md', 'REVIEW.md', 'INBOX.md', 'PROMPT.txt', 'run.jsonl', 'launch.log', 'supervisor.log', 'exit.json', 'attempts/**', 'brief-versions/**', 'runtime/**'];
 
 export function protectedBranchDenies(branches) {
   const out = [];

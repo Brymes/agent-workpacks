@@ -11,7 +11,7 @@ git, fix this file, log it in `LEDGER.md` §2.
 
 ## Who owns what
 
-<fill: service ownership lines relevant to this pack (from `.agents/skills/ddd-guard/rules/service-ownership.md`)>
+<fill: ownership facts and authoritative project sources relevant to this pack>
 
 ## Code pointers (file:line, verified)
 

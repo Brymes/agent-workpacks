@@ -55,12 +55,14 @@ atomicWriteJson(path.join(dest, 'control', 'blockers.json'), {});
 atomicWriteJson(path.join(dest, 'control', 'escalations.json'), { version: 1, next: 1, items: [] });
 fs.writeFileSync(path.join(dest, 'control', 'locks', '.keep'), '');
 const files = []; (function walk(d) { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, e.name); if (e.isDirectory()) walk(p); else files.push(path.relative(dest, p)); } })(dest);
+const quote = (s) => "'" + String(s).replaceAll("'", "'\"'\"'") + "'";
+const command = (name, rest) => `${quote(NODE_BIN)} ${quote(path.join(SKILL_DIR, 'scripts', name))} ${rest}`;
 const next = [
-  `${NODE_BIN} ${SKILL_DIR}/scripts/pack-next-id.mjs ${dest} --kind task --id T1`,
-  `cp ${dest}/tasks/_templates/BRIEF.md ${dest}/tasks/T1/BRIEF.md   # then fill it`,
-  `${NODE_BIN} ${SKILL_DIR}/scripts/pack-lint.mjs ${dest}`,
-  `${NODE_BIN} ${SKILL_DIR}/scripts/pack-watch.mjs attach --pack ${dest}`,
-  `${NODE_BIN} ${SKILL_DIR}/scripts/pack-worker.mjs start --pack ${dest} --task T1`,
+  command('pack-next-id.mjs', `${quote(dest)} --kind task --id T1`),
+  `cp ${quote(path.join(dest, 'tasks/_templates/BRIEF.md'))} ${quote(path.join(dest, 'tasks/T1/BRIEF.md'))}   # then fill it`,
+  command('pack-lint.mjs', quote(dest)),
+  command('pack-watch.mjs', `attach --pack ${quote(dest)} --host <lead-tool> --session <native-session-id>`),
+  command('pack-worker.mjs', `start --pack ${quote(dest)} --task T1 --tool <worker-tool>`),
 ];
 if (json) console.log(JSON.stringify({ ok: true, pack: dest, pfx, files, next }, null, 2));
 else { console.log(`created ${dest} (prefix ${pfx}, git mode ${gitMode}, merge target ${mergeTarget})`); for (const f of files.sort()) console.log(`  ${f}`); console.log('\nnext:'); for (const n of next) console.log(`  ${n}`); }

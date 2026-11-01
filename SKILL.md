@@ -2,10 +2,10 @@
 name: agent-workpacks
 description: Plan and run delegated engineering work with one lead and persistent workers in Codex, Claude Code, or OpenCode. Use for parallel tasks with bounded ownership, saved worker sessions, file-based handbacks, review, monitoring, and recovery. Do not use for a small single-agent task.
 license: MIT
-compatibility: Requires Node.js 24+, Git, and the CLI selected for each worker; macOS or Linux.
 metadata:
   version: "0.1.0"
   modes: "plan dispatch"
+  compatibility: "Node.js 24+, Git, selected native CLIs; macOS or Linux"
 ---
 
 # Agent Workpacks
