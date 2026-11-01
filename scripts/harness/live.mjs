@@ -7,10 +7,10 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { runtimeBinary } from '../lib/runtimes.mjs';
-import { parseLine } from '../lib/events.mjs';
+import { runtimeBinary } from '../../skills/agent-workpacks/scripts/lib/runtimes.mjs';
+import { parseLine } from '../../skills/agent-workpacks/scripts/lib/events.mjs';
 
-const scripts = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const scripts = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../skills/agent-workpacks/scripts');
 const skill = path.dirname(scripts);
 const options = process.argv.slice(2), lead = options[options.indexOf('--lead') + 1];
 if (!['codex', 'claude', 'opencode'].includes(lead)) throw Error('usage: live.mjs --lead codex|claude|opencode [--prepare-only]');

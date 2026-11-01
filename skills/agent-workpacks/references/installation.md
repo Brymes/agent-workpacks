@@ -7,13 +7,13 @@ you do not need all three CLIs unless you intend to use all three. Authenticate 
 npx skills add Brymes/agent-workpacks --skill agent-workpacks -a codex -a claude-code -a opencode
 ```
 
-Add `-g` for global installation. The installer copies or links the whole skill directory, including scripts,
+Add `-g` for global installation. The installer discovers `skills/agent-workpacks/SKILL.md` and copies or links that skill directory, including scripts,
 references and assets. For one tool, keep only its `-a` argument. Run `npx skills check` and `npx skills update
 agent-workpacks` to inspect and install updates. Versioned GitHub releases describe compatibility changes.
 
 ## Manual installation
 
-Copy the complete repository directory, including supporting files, to one of these locations:
+Copy the complete `skills/agent-workpacks/` directory, including supporting files, to one of these locations:
 
 | Tool | Project | Global |
 |---|---|---|
