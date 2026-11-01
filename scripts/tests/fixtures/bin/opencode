@@ -1,0 +1,38 @@
+#!/bin/sh
+# Fake opencode for agent-workpacks tests: prints the banner, records argv + OPENCODE_PERMISSION, then acts per OC_STUB_MODE.
+MODE="${OC_STUB_MODE:-ok}"
+if [ -n "${OC_STUB_ARGS_FILE:-}" ]; then
+  { printf 'ARGV:'; for a in "$@"; do printf ' [%s]' "$a"; done; printf '\nPERMISSION: %s\nCWD: %s\n' "${OPENCODE_PERMISSION:-}" "$(pwd)"; } >> "$OC_STUB_ARGS_FILE"
+fi
+for arg in "$@"; do if [ "$arg" = "--help" ]; then printf "%s\n" "--session --format --model --variant --auto"; exit 0; fi; done
+case "${1:-}" in
+  --version) echo "stub 0.0.0"; exit 0 ;;
+  stats) echo "model                      tokens"; echo "opencode-go/stub           123"; exit 0 ;;
+esac
+printf '\033[0m\n> build · stub-model\n\033[0m\n'
+SID="ses_stub$(date +%s)$$"
+prev=""
+for arg in "$@"; do
+  if [ "$prev" = "--session" ]; then SID="$arg"; fi
+  prev="$arg"
+done
+ms() { echo $(( $(date +%s) * 1000 )); }
+ev_start()  { printf '{"type":"step_start","timestamp":%s,"sessionID":"%s","part":{"type":"step-start"}}\n' "$(ms)" "$SID"; }
+ev_tool()   { printf '{"type":"tool_use","timestamp":%s,"sessionID":"%s","part":{"type":"tool","tool":"%s","callID":"c%s","state":{"status":"%s","input":%s,"output":"%s"}}}\n' "$(ms)" "$SID" "$1" "$$" "$2" "$3" "$4"; }
+ev_text()   { printf '{"type":"text","timestamp":%s,"sessionID":"%s","part":{"type":"text","text":"%s"}}\n' "$(ms)" "$SID" "$1"; }
+ev_finish() { printf '{"type":"step_finish","timestamp":%s,"sessionID":"%s","part":{"type":"step-finish","reason":"%s"}}\n' "$(ms)" "$SID" "$1"; }
+ev_error()  { printf '{"type":"error","timestamp":%s,"sessionID":"%s","error":{"name":"APIError","message":"%s"}}\n' "$(ms)" "$SID" "$1"; }
+case "$MODE" in
+  banner-only) exit 0 ;;
+  ok)        ev_start; ev_tool read completed '{"filePath":"README.md"}' 'contents'; sleep "${OC_STUB_SLEEP:-1}"; ev_text "OK"; ev_finish stop; exit 0 ;;
+  secret)    ev_start; ev_tool bash completed '{"command":"env"}' 'API_KEY=abc123def456ghi789 HOME=/x'; ev_text "OK"; ev_finish stop; exit 0 ;;
+  error)     ev_start; ev_error "Cannot connect to API: getaddrinfo ENOTFOUND opencode.ai"; exit 1 ;;
+  credits)   ev_start; echo "APIError: personal-team-blocked:spending-limit: You have run out of credits" >&2; ev_error "You have run out of credits"; exit 1 ;;
+  auth)      ev_start; echo "Unauthorized 401" >&2; ev_error "ProviderAuthError invalid_grant"; exit 1 ;;
+  badmodel)  ev_start; ev_error 'Bad Request: {\"model\":\"deepseek-v4.1-flash\"}'; exit 1 ;;
+  doomloop)  ev_start; i=0; while [ $i -lt 4 ]; do ev_tool bash completed '{"command":"ls"}' 'a b'; i=$((i+1)); done; sleep "${OC_STUB_SLEEP:-30}"; exit 0 ;;
+  chatloop)  ev_start; i=0; while [ $i -lt 6 ]; do ev_text "Let me check."; i=$((i+1)); done; sleep "${OC_STUB_SLEEP:-30}"; exit 0 ;;
+  hang)      sleep "${OC_STUB_SLEEP:-300}"; exit 0 ;;
+  slow-start) sleep 3; ev_start; ev_text "OK"; ev_finish stop; exit 0 ;;
+  *) echo "unknown OC_STUB_MODE $MODE" >&2; exit 2 ;;
+esac

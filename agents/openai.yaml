@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agent Workpacks"
+  short_description: "Persistent workers and durable multi-agent handoffs"
+  default_prompt: "Use $agent-workpacks to plan and coordinate bounded engineering tasks."
