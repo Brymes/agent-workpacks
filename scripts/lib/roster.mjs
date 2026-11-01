@@ -25,7 +25,7 @@ export const DEFAULT_CONFIG = {
     coder: 'opencode-go/deepseek-v4.1-flash', researcher: 'opencode-go/glm-5.3-flash',
     verifier: 'opencode-go/deepseek-v4.1-flash', docs: 'opencode-go/glm-5.3-flash',
   },
-  agents: { coder: 'dp-coder', researcher: 'dp-researcher', verifier: 'dp-verifier', docs: 'dp-researcher' },
+  agents: {},
   default_variant: 'high',
   notify: { osascript: true, title: 'agent-workpacks' },
 };

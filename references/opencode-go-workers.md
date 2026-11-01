@@ -4,5 +4,6 @@ OpenCode is the default worker runtime. Its configured role presets can use Open
 authenticated in OpenCode. See [worker runtimes](workers.md) for selection, permissions and same-session corrections.
 
 OpenCode 2 receives ordered `permissions` rules with `shell` and `subagent` action names. The controller translates
-legacy first-match maps into last-match order. No global OpenCode config or credentials are changed. Bundled role
-agent definitions are optional; the bounded task preamble remains authoritative when no matching agent is installed.
+legacy first-match maps into last-match order. No global OpenCode config or credentials are changed. The controller
+passes the task brief and scoped permissions directly to the native runtime. An explicit --agent or configured agent
+name may select a custom profile already maintained by the project; no bundled role definitions are required.

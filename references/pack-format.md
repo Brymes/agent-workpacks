@@ -39,12 +39,7 @@ and limits. The default worker capacity is ten. Each launch still passes the con
     "verifier": "opencode-go/deepseek-v4.1-flash",
     "docs": "opencode-go/glm-5.3-flash"
   },
-  "agents": {
-    "coder": "dp-coder",
-    "researcher": "dp-researcher",
-    "verifier": "dp-verifier",
-    "docs": "dp-researcher"
-  }
+  "agents": {}
 }
 ```
 
