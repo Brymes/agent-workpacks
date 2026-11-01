@@ -11,8 +11,8 @@ metadata:
 # Agent Workpacks
 
 One lead plans and reviews. Workers execute bounded assignments and hand back through files. The pack is the source
-of truth; another lead can recover the work without the previous chat. Read [architecture](references/architecture.md)
-before changing orchestration or monitoring.
+of truth; another lead can recover the work without the previous chat. The lifecycle is plan → launch → handback → review → correction or acceptance. Native CLIs own authentication
+and conversation storage; the controller owns assignment, process state, ownership and acceptance.
 
 ## Invoke
 
@@ -43,7 +43,7 @@ particular installation path, project, provider, or model. See [installation](re
 3. Initialize with `node <skill>/scripts/pack-init.mjs <slug> --root <project> --pfx <PFX>`. The default git mode is
    commit-only; select remote integration authority explicitly in RULES.md.
 4. Split into independent tasks with disjoint checkouts and Owns. Fill each brief from the bundled template. Keep
-   briefs runtime-neutral; select the worker runtime when launching. See [brief format](references/brief-format.md).
+   briefs runtime-neutral; select the worker runtime when launching. See [brief format](references/pack-format.md#task-briefs).
 5. Use meaningful acceptance commands and retained artifacts. Before isolated implementation, record how it can fail.
 6. Run `pack-lint.mjs <pack>`, fix safety failures, and record the next action in `control/CURRENT.md`.
 7. Bind the lead and arm its monitoring using [lead monitoring](references/hosts.md).
@@ -70,4 +70,4 @@ task's BRIEF.md, STATUS.md, REPORT.md, and QUESTIONS.md. See [pack format](refer
 
 Monitoring uses the existing no-model sweep. Claude and OpenCode background shell completions wake the originating
 session; Codex uses queued delivery. Quiet polling calls no model. See [lead monitoring](references/hosts.md) and
-[escalation handling](references/consult-escalation.md). Disable monitoring when work finishes.
+[escalation handling](references/hosts.md#questions-and-escalation). Disable monitoring when work finishes.

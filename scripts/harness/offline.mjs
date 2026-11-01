@@ -6,7 +6,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const scripts = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const scripts = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../skills/agent-workpacks/scripts');
 const runDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-workpacks-harness-'));
 const root = path.join(runDir, 'project with spaces');
 fs.mkdirSync(root, { recursive: true });

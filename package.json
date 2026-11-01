@@ -8,7 +8,7 @@
   "engines": { "node": ">=24" },
   "scripts": {
     "check": "node scripts/check.mjs",
-    "test:controller": "node scripts/tests/run.mjs",
+    "test:controller": "node tests/controller/run.mjs",
     "harness:offline": "node scripts/harness/offline.mjs"
   }
 }
