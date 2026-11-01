@@ -38,13 +38,21 @@ function deepMerge(a, b) {
   return out;
 }
 export function loadConfig(pp) {
-  const c = deepMerge(DEFAULT_CONFIG, readJson(pp.config, {}));
+  const saved = readJson(pp.config);
+  if (!saved || Array.isArray(saved) || typeof saved !== 'object' || typeof saved.root !== 'string' || !saved.root.trim()) throw new Error('pack configuration must be an object with an explicit project root');
+  const c = deepMerge(DEFAULT_CONFIG, saved);
+  // Packs from the original controller required DDD approval for code. Missing new configuration must not weaken it.
+  if (!Object.hasOwn(saved, 'project_policy')) c.project_policy = { type: 'ddd' };
   if (!c.pack) c.pack = pp.root;
   return c;
 }
 
 export function emptyRoster(pp, pfx) { return { version: 1, pack: pp.root, pfx: pfx || null, updated_at: iso(), tasks: [] }; }
-export function loadRoster(pp) { return readJson(pp.roster, emptyRoster(pp)); }
+export function loadRoster(pp) {
+  const roster = readJson(pp.roster);
+  if (!roster || Array.isArray(roster) || typeof roster !== 'object' || !Array.isArray(roster.tasks)) throw new Error('pack roster must contain a tasks array; restore the saved state before continuing');
+  return roster;
+}
 export function saveRoster(pp, r) { r.updated_at = iso(); atomicWriteJson(pp.roster, r); }
 export function updateRoster(pp, fn) {
   return withLock(pp.rosterLock, () => { const r = loadRoster(pp); const res = fn(r); saveRoster(pp, r); return res; });
