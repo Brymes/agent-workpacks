@@ -39,7 +39,7 @@ function claudeSettings(row) {
   return { permissions: { allow, deny } };
 }
 
-function openCodeV2Permissions(permission) {
+function openCodeV2Permissions(permission, cfg) {
   // V1 maps were first-match; V2 is an ordered last-match array with different action names.
   const names = { bash: 'shell', task: 'subagent' };
   const rules = [];
@@ -49,6 +49,9 @@ function openCodeV2Permissions(permission) {
     for (const [resource, effect] of entries) rules.push({ action: names[action] || action, resource, effect });
   }
   rules.push({ action: 'subagent', resource: '*', effect: 'deny' });
+  // Briefs, reports and acceptance scripts can live outside the assigned Git worktree.
+  // Their edit permissions remain independently bounded by Owns.
+  rules.push({ action: 'external_directory', resource: path.join(cfg.root, '*'), effect: 'allow' });
   return rules;
 }
 
@@ -76,7 +79,7 @@ export function buildInvocation({ row, cfg, session, prompt, permission }) {
     if (major >= 2) {
       delete env.OPENCODE_PERMISSION;
       const previous = env.OPENCODE_CONFIG_CONTENT ? JSON.parse(env.OPENCODE_CONFIG_CONTENT) : {};
-      env.OPENCODE_CONFIG_CONTENT = JSON.stringify({ ...previous, permissions: [...(previous.permissions || []), ...openCodeV2Permissions(permission)] });
+      env.OPENCODE_CONFIG_CONTENT = JSON.stringify({ ...previous, permissions: [...(previous.permissions || []), ...openCodeV2Permissions(permission, cfg)] });
     } else env.OPENCODE_PERMISSION = JSON.stringify(permission);
     return { binary, args, env, session: session || null };
   }

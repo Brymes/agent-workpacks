@@ -155,9 +155,10 @@ function cmdAttach() {
     const current = state();
     const replacing = current.session_id && (current.session_id !== threadId || current.host !== host);
     if (replacing && !args.takeover) throw new Error(`pack is already bound to ${current.thread_id}; pass --takeover to replace it`);
-    if (replacing) current.previous_threads.push({ thread_id: current.thread_id, attached_at: current.attached_at, replaced_at: iso(), heartbeat_automation_id: current.heartbeat_automation_id || null });
+    if (replacing) current.previous_threads.push({ host: current.host, session_id: current.session_id, thread_id: current.thread_id, attached_at: current.attached_at, replaced_at: iso(), heartbeat_automation_id: current.heartbeat_automation_id || null });
     if (replacing) for (const pid of [current.waiter_pid, current.runner_pid]) if (pid) { try { process.kill(pid, 'SIGTERM'); } catch {} }
-    current.host = host; current.session_id = threadId; current.waiter_pid = null; current.runner_pid = null;
+    current.host = host; current.session_id = threadId;
+    if (replacing) { current.waiter_pid = null; current.runner_pid = null; }
     current.thread_id = host === 'codex' ? threadId : null;
     current.attached_at = iso();
     current.event_queue_enabled = true;
@@ -263,7 +264,7 @@ function unackedSweepItems() {
     .map((item) => ({ id: item.id, task: item.task, class: item.class, kind: item.kind, to: item.to }));
 }
 
-function cmdWait() {
+async function cmdWait() {
   let claimed = false;
   const release = () => { if (!claimed) return; withLock(pp.watcherLock, () => { const current = state(); if (current.waiter_pid === process.pid) save({ ...current, waiter_pid: null }); }); claimed = false; };
   process.on('SIGTERM', () => { release(); process.exit(143); });
@@ -302,23 +303,33 @@ function cmdWait() {
       for (const f of watched) if (fileStamp(f) !== baseline.get(f)) finish({ event: 'file', path: f }, 11);
       const now = Date.now();
       if (now >= deadline) finish({ event: 'heartbeat' }, 0);
-      sleepMs(Math.max(1, Math.min(1000, nextSweep - now, deadline - now)));
+      await new Promise((resolve) => setTimeout(resolve, Math.max(1, Math.min(1000, nextSweep - now, deadline - now))));
     }
   } catch (error) {
     finish({ event: 'error', error: clip(error.message, 800) }, 2);
   }
 }
 
-function cmdRun() {
+async function cmdRun() {
   const interval = positiveNumber('interval-sec', 900) * 1000;
+  withLock(pp.watcherLock, () => {
+    const current = state();
+    if (current.runner_pid && current.runner_pid !== process.pid) {
+      try { process.kill(current.runner_pid, 0); throw new Error('a portable watcher is already active'); }
+      catch (error) { if (error.code !== 'ESRCH') throw error; }
+    }
+    save({ ...current, runner_pid: process.pid });
+  });
+  const release = () => withLock(pp.watcherLock, () => { const current = state(); if (current.runner_pid === process.pid) save({ ...current, runner_pid: null }); });
+  process.on('SIGTERM', () => { release(); process.exit(143); });
   for (;;) {
     const current = state();
-    if (current.disabled_at || current.host !== 'codex' || (current.runner_pid && current.runner_pid !== process.pid)) return;
+    if (current.disabled_at || current.host !== 'codex' || (current.runner_pid && current.runner_pid !== process.pid)) { release(); return; }
     cmdTick({ exit: false });
-    sleepMs(interval);
+    await new Promise((resolve) => setTimeout(resolve, interval));
   }
 }
 
 const commands = { run: cmdRun, attach: cmdAttach, tick: cmdTick, status: cmdStatus, disable: cmdDisable, wait: cmdWait };
 if (!commands[command]) { console.error(`unknown command ${command}\n${USAGE}`); process.exit(1); }
-try { commands[command](); } catch (error) { die(2, error.stack || error.message, json); }
+try { await commands[command](); } catch (error) { die(2, error.stack || error.message, json); }
