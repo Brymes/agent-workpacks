@@ -31,3 +31,7 @@ not equivalent OS isolation. Check actual ownership with `scope` before acceptin
 The optional OpenCode SQLite liveness peek is best-effort and can be disabled with `DP_NO_DB=1`. Versioned JSON
 streams and current-attempt process state are the primary evidence. `pack-probe.mjs` is an optional OpenCode provider
 diagnostic; it is not required for native workers or same-session corrections.
+
+Claude workers receive distinct session UUIDs and no inherited parent-session markers. For OpenCode, the controller
+passes the brief and scoped permissions directly. An explicit --agent or configured agent name can select a custom
+profile already maintained by the project; bundled role definitions are not required.

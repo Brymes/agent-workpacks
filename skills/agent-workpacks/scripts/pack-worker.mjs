@@ -230,7 +230,7 @@ function cmdStart() {
   let agent = null;
   if (backend === 'opencode') {
     if (args.agent !== undefined) agent = args.agent === 'none' ? null : args.agent;
-    else { const name = cfg.agents[role]; if (name && ['agent', 'agents'].some((d) => fs.existsSync(path.join(cfg.root, '.opencode', d, `${name}.md`)))) agent = name; }
+    else agent = cfg.agents?.[role] || null;
   }
   let checkout = args.cwd ? path.resolve(args.cwd) : null;
   if (!checkout) {

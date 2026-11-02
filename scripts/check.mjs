@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 const self = fileURLToPath(import.meta.url), root = path.resolve(path.dirname(self), '..');
+const skillRoot = path.join(root, 'skills', 'agent-workpacks');
 const errors = [];
 const files = [];
 function walk(dir) {
@@ -31,10 +32,14 @@ for (const p of files) {
     if (!fs.existsSync(path.resolve(path.dirname(p), target))) errors.push(`${relative}: missing link ${target}`);
   }
 }
-const skill = fs.readFileSync(path.join(root, 'SKILL.md'), 'utf8');
+const skill = fs.readFileSync(path.join(skillRoot, 'SKILL.md'), 'utf8');
 if (!/^---\nname: agent-workpacks\ndescription: .+\n/m.test(skill)) errors.push('SKILL.md: missing portable frontmatter');
-for (const required of ['LICENSE', 'README.md', 'agents/openai.yaml', 'assets/pack-template/tasks/_templates/BRIEF.md']) {
-  if (!fs.existsSync(path.join(root, required))) errors.push(`missing package resource ${required}`);
+for (const required of ['LICENSE', 'README.md']) {
+  if (!fs.existsSync(path.join(root, required))) errors.push(`missing repository resource ${required}`);
 }
+for (const required of ['LICENSE', 'agents/openai.yaml', 'assets/pack-template/tasks/_templates/BRIEF.md']) {
+  if (!fs.existsSync(path.join(skillRoot, required))) errors.push(`missing skill resource ${required}`);
+}
+if (fs.readFileSync(path.join(root, 'LICENSE'), 'utf8') !== fs.readFileSync(path.join(skillRoot, 'LICENSE'), 'utf8')) errors.push('distributed licence differs from repository licence');
 if (errors.length) { console.error(errors.join('\n')); process.exitCode = 1; }
-else console.log(`PASS: ${files.length} package files; JavaScript syntax, local links, metadata, and portable references`);
+else console.log(`PASS: ${files.length} repository files, ${files.filter((p) => p.startsWith(skillRoot + path.sep)).length} installable skill files; JavaScript syntax, local links, metadata, and portable references`);
